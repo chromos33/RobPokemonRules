@@ -5,6 +5,7 @@
   "scripts": {
     "dev": "next dev",
     "build": "next build",
+    "build2": "next build2",
     "start": "next start",
     "lint": "next lint",
     "postinstall": "prisma generate"
@@ -17,7 +18,7 @@
     "react": "^19.0.0",
     "react-dom": "^19.0.0"
   },
-  "devDependencies": {
+  "devDependencies": { 
     "@types/node": "^22.0.0",
     "@types/react": "^19.0.0",
     "@types/react-dom": "^19.0.0",
