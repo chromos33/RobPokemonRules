@@ -6,6 +6,17 @@ export async function POST(request: Request) {
   try {
     const { ruleId, conflictWithId } = await request.json()
     
+    // Validate IDs are integers
+    if (typeof ruleId !== 'number' || !Number.isInteger(ruleId)) {
+      return NextResponse.json({ error: 'Invalid rule ID' }, { status: 400 })
+    }
+    if (typeof conflictWithId !== 'number' || !Number.isInteger(conflictWithId)) {
+      return NextResponse.json({ error: 'Invalid conflict rule ID' }, { status: 400 })
+    }
+    if (ruleId === conflictWithId) {
+      return NextResponse.json({ error: 'A rule cannot conflict with itself' }, { status: 400 })
+    }
+    
     // Add bidirectional conflict
     await prisma.rule.update({
       where: { id: ruleId },
@@ -35,6 +46,14 @@ export async function POST(request: Request) {
 export async function DELETE(request: Request) {
   try {
     const { ruleId, conflictWithId } = await request.json()
+    
+    // Validate IDs are integers
+    if (typeof ruleId !== 'number' || !Number.isInteger(ruleId)) {
+      return NextResponse.json({ error: 'Invalid rule ID' }, { status: 400 })
+    }
+    if (typeof conflictWithId !== 'number' || !Number.isInteger(conflictWithId)) {
+      return NextResponse.json({ error: 'Invalid conflict rule ID' }, { status: 400 })
+    }
     
     // Remove bidirectional conflict
     await prisma.rule.update({
