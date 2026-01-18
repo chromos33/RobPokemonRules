@@ -6,11 +6,13 @@ export function isPasswordValid(password: string | null): boolean {
   
   // If no password is configured, allow all operations
   if (!configuredPassword) {
+    console.log('[Auth] No PASSWORD env var configured, allowing all operations')
     return true
   }
   
   // If no password provided, deny access
   if (!password) {
+    console.log('[Auth] No password provided, denying access')
     return false
   }
   
@@ -23,11 +25,15 @@ export function isPasswordValid(password: string | null): boolean {
     
     // Ensure buffers are same length before comparison
     if (passwordBuffer.length !== configuredBuffer.length) {
+      console.log('[Auth] Password length mismatch, denying access')
       return false
     }
     
-    return crypto.timingSafeEqual(passwordBuffer, configuredBuffer)
+    const isValid = crypto.timingSafeEqual(passwordBuffer, configuredBuffer)
+    console.log('[Auth] Password comparison result:', isValid ? 'valid' : 'invalid')
+    return isValid
   } catch (error) {
+    console.error('[Auth] Error during password comparison:', error)
     // Fallback to simple comparison if crypto fails (shouldn't happen)
     return password === configuredPassword
   }
@@ -38,5 +44,9 @@ export function isPasswordValid(password: string | null): boolean {
  */
 export function extractPasswordFromRequest(request: Request): string | null {
   const url = new URL(request.url)
-  return url.searchParams.get('pw')
+  const pw = url.searchParams.get('pw')
+  // Don't log the full URL as it contains the password in query params
+  console.log('[Auth] Extracting password from request path:', url.pathname)
+  console.log('[Auth] Password extracted:', pw ? 'yes' : 'no')
+  return pw
 }

@@ -6,7 +6,9 @@ import { isPasswordValid, extractPasswordFromRequest } from '@/lib/auth'
 export async function POST(request: Request) {
   // Check password authorization
   const password = extractPasswordFromRequest(request)
+  console.log('[API /api/conflicts POST] Password provided:', password ? 'yes' : 'no')
   if (!isPasswordValid(password)) {
+    console.warn('[API /api/conflicts POST] Unauthorized: Invalid or missing password')
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
   }
   
@@ -43,8 +45,10 @@ export async function POST(request: Request) {
       },
     })
     
+    console.log('[API /api/conflicts POST] Conflict added successfully between', ruleId, 'and', conflictWithId)
     return NextResponse.json({ success: true })
   } catch (error) {
+    console.error('[API /api/conflicts POST] Error adding conflict:', error)
     return NextResponse.json({ error: 'Failed to add conflict' }, { status: 500 })
   }
 }
@@ -53,7 +57,9 @@ export async function POST(request: Request) {
 export async function DELETE(request: Request) {
   // Check password authorization
   const password = extractPasswordFromRequest(request)
+  console.log('[API /api/conflicts DELETE] Password provided:', password ? 'yes' : 'no')
   if (!isPasswordValid(password)) {
+    console.warn('[API /api/conflicts DELETE] Unauthorized: Invalid or missing password')
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
   }
   
@@ -87,8 +93,10 @@ export async function DELETE(request: Request) {
       },
     })
     
+    console.log('[API /api/conflicts DELETE] Conflict removed successfully between', ruleId, 'and', conflictWithId)
     return NextResponse.json({ success: true })
   } catch (error) {
+    console.error('[API /api/conflicts DELETE] Error removing conflict:', error)
     return NextResponse.json({ error: 'Failed to remove conflict' }, { status: 500 })
   }
 }

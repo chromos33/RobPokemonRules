@@ -35,15 +35,38 @@ export default function Home() {
   const [randomizedRules, setRandomizedRules] = useState<Rule[]>([])
   const [randomMessage, setRandomMessage] = useState('')
   
+  // Helper function to parse error response
+  // Note: This consumes the response body, so should only be called once per response
+  const parseErrorResponse = async (res: Response): Promise<string> => {
+    const errorText = await res.text()
+    let errorMessage = 'Server error'
+    try {
+      const errorData = JSON.parse(errorText)
+      errorMessage = errorData.error || errorMessage
+    } catch {
+      // If response is not JSON, use the text or default message
+      errorMessage = errorText || errorMessage
+    }
+    return errorMessage
+  }
+  
   // Fetch rules on load and check for password
   useEffect(() => {
     // Check for password in URL
     const params = new URLSearchParams(window.location.search)
     const pw = params.get('pw')
     
-    if (pw) {
+    // Only set password if it's a non-empty string
+    // pw can be null (not present) or string (including empty string)
+    if (pw !== null && pw.trim().length > 0) {
       setPassword(pw)
       setIsAuthorized(true)
+      console.log('Password detected and set from URL parameter')
+    } else if (pw === '') {
+      // Empty password parameter detected
+      console.warn('Empty password parameter detected in URL. Password is required for editing.')
+    } else {
+      console.log('No password parameter in URL. App is in read-only mode.')
     }
     
     fetchRules()
@@ -65,6 +88,7 @@ export default function Home() {
     if (!newRuleText.trim()) return
     try {
       const url = password ? `/api/rules?pw=${encodeURIComponent(password)}` : '/api/rules'
+      console.log('Making POST request to add rule with auth:', password ? 'yes' : 'no')
       const res = await fetch(url, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -74,11 +98,15 @@ export default function Home() {
         setNewRuleText('')
         setNewRuleDescription('')
         fetchRules()
+      } else if (res.status === 401) {
+        alert('Failed to add rule: Unauthorized. Please check that you have the correct password in the URL (?pw=yourpassword)')
       } else {
-        alert('Failed to add rule. Unauthorized or server error.')
+        const errorMessage = await parseErrorResponse(res)
+        alert(`Failed to add rule: ${errorMessage} (Status: ${res.status})`)
       }
     } catch (error) {
-      console.error('Failed to add rule')
+      console.error('Failed to add rule:', error)
+      alert('Failed to add rule: Network error')
     }
   }
   
@@ -86,6 +114,7 @@ export default function Home() {
     if (!editingRule || !editText.trim()) return
     try {
       const url = password ? `/api/rules?pw=${encodeURIComponent(password)}` : '/api/rules'
+      console.log('Making PUT request to update rule with auth:', password ? 'yes' : 'no')
       const res = await fetch(url, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
@@ -96,11 +125,15 @@ export default function Home() {
         setEditText('')
         setEditDescription('')
         fetchRules()
+      } else if (res.status === 401) {
+        alert('Failed to update rule: Unauthorized. Please check that you have the correct password in the URL (?pw=yourpassword)')
       } else {
-        alert('Failed to update rule. Unauthorized or server error.')
+        const errorMessage = await parseErrorResponse(res)
+        alert(`Failed to update rule: ${errorMessage} (Status: ${res.status})`)
       }
     } catch (error) {
-      console.error('Failed to update rule')
+      console.error('Failed to update rule:', error)
+      alert('Failed to update rule: Network error')
     }
   }
   
@@ -119,14 +152,23 @@ export default function Home() {
   const deleteRule = async (id: number) => {
     try {
       const url = password ? `/api/rules?pw=${encodeURIComponent(password)}` : '/api/rules'
-      await fetch(url, {
+      console.log('Making DELETE request to delete rule with auth:', password ? 'yes' : 'no')
+      const res = await fetch(url, {
         method: 'DELETE',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ id }),
       })
-      fetchRules()
+      if (res.ok) {
+        fetchRules()
+      } else if (res.status === 401) {
+        alert('Failed to delete rule: Unauthorized. Please check that you have the correct password in the URL (?pw=yourpassword)')
+      } else {
+        const errorMessage = await parseErrorResponse(res)
+        alert(`Failed to delete rule: ${errorMessage} (Status: ${res.status})`)
+      }
     } catch (error) {
-      console.error('Failed to delete rule')
+      console.error('Failed to delete rule:', error)
+      alert('Failed to delete rule: Network error')
     }
   }
   
@@ -134,38 +176,56 @@ export default function Home() {
     if (ruleId === conflictWithId) return
     try {
       const url = password ? `/api/conflicts?pw=${encodeURIComponent(password)}` : '/api/conflicts'
-      await fetch(url, {
+      console.log('Making POST request to add conflict with auth:', password ? 'yes' : 'no')
+      const res = await fetch(url, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ ruleId, conflictWithId }),
       })
-      fetchRules()
-      // Update the popup rule with fresh data
-      const updatedRules = await (await fetch('/api/rules')).json()
-      const updatedRule = updatedRules.find((r: Rule) => r.id === ruleId)
-      if (updatedRule) setConflictPopupRule(updatedRule)
+      if (res.ok) {
+        fetchRules()
+        // Update the popup rule with fresh data
+        const updatedRules = await (await fetch('/api/rules')).json()
+        const updatedRule = updatedRules.find((r: Rule) => r.id === ruleId)
+        if (updatedRule) setConflictPopupRule(updatedRule)
+      } else if (res.status === 401) {
+        alert('Failed to add conflict: Unauthorized. Please check that you have the correct password in the URL (?pw=yourpassword)')
+      } else {
+        const errorMessage = await parseErrorResponse(res)
+        alert(`Failed to add conflict: ${errorMessage} (Status: ${res.status})`)
+      }
     } catch (error) {
-      console.error('Failed to add conflict')
+      console.error('Failed to add conflict:', error)
+      alert('Failed to add conflict: Network error')
     }
   }
   
   const removeConflict = async (ruleId: number, conflictId: number) => {
     try {
       const url = password ? `/api/conflicts?pw=${encodeURIComponent(password)}` : '/api/conflicts'
-      await fetch(url, {
+      console.log('Making DELETE request to remove conflict with auth:', password ? 'yes' : 'no')
+      const res = await fetch(url, {
         method: 'DELETE',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ ruleId, conflictWithId: conflictId }),
       })
-      fetchRules()
-      // Update the popup rule with fresh data if popup is open
-      if (conflictPopupRule) {
-        const updatedRules = await (await fetch('/api/rules')).json()
-        const updatedRule = updatedRules.find((r: Rule) => r.id === conflictPopupRule.id)
-        if (updatedRule) setConflictPopupRule(updatedRule)
+      if (res.ok) {
+        fetchRules()
+        // Update the popup rule with fresh data if popup is open
+        if (conflictPopupRule) {
+          const updatedRules = await (await fetch('/api/rules')).json()
+          const updatedRule = updatedRules.find((r: Rule) => r.id === conflictPopupRule.id)
+          if (updatedRule) setConflictPopupRule(updatedRule)
+        }
+      } else if (res.status === 401) {
+        alert('Failed to remove conflict: Unauthorized. Please check that you have the correct password in the URL (?pw=yourpassword)')
+      } else {
+        const errorMessage = await parseErrorResponse(res)
+        alert(`Failed to remove conflict: ${errorMessage} (Status: ${res.status})`)
       }
     } catch (error) {
-      console.error('Failed to remove conflict')
+      console.error('Failed to remove conflict:', error)
+      alert('Failed to remove conflict: Network error')
     }
   }
   
