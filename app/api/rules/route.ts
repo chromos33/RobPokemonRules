@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
+import { isPasswordValid, extractPasswordFromRequest } from '@/lib/auth'
 
 // GET all rules with their conflicts
 export async function GET() {
@@ -18,6 +19,12 @@ export async function GET() {
 
 // POST create a new rule
 export async function POST(request: Request) {
+  // Check password authorization
+  const password = extractPasswordFromRequest(request)
+  if (!isPasswordValid(password)) {
+    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+  }
+  
   try {
     const { text, description } = await request.json()
     
@@ -43,6 +50,12 @@ export async function POST(request: Request) {
 
 // PUT update a rule
 export async function PUT(request: Request) {
+  // Check password authorization
+  const password = extractPasswordFromRequest(request)
+  if (!isPasswordValid(password)) {
+    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+  }
+  
   try {
     const { id, text, description } = await request.json()
     
@@ -74,6 +87,12 @@ export async function PUT(request: Request) {
 
 // DELETE a rule
 export async function DELETE(request: Request) {
+  // Check password authorization
+  const password = extractPasswordFromRequest(request)
+  if (!isPasswordValid(password)) {
+    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+  }
+  
   try {
     const { id } = await request.json()
     
