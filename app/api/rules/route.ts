@@ -21,7 +21,9 @@ export async function GET() {
 export async function POST(request: Request) {
   // Check password authorization
   const password = extractPasswordFromRequest(request)
+  console.log('[API /api/rules POST] Password provided:', password ? 'yes' : 'no')
   if (!isPasswordValid(password)) {
+    console.warn('[API /api/rules POST] Unauthorized: Invalid or missing password')
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
   }
   
@@ -42,8 +44,10 @@ export async function POST(request: Request) {
       data: { text: trimmedText, description: trimmedDescription },
       include: { conflictsWith: true },
     })
+    console.log('[API /api/rules POST] Rule created successfully:', rule.id)
     return NextResponse.json(rule)
   } catch (error) {
+    console.error('[API /api/rules POST] Error creating rule:', error)
     return NextResponse.json({ error: 'Failed to create rule' }, { status: 500 })
   }
 }
@@ -52,7 +56,9 @@ export async function POST(request: Request) {
 export async function PUT(request: Request) {
   // Check password authorization
   const password = extractPasswordFromRequest(request)
+  console.log('[API /api/rules PUT] Password provided:', password ? 'yes' : 'no')
   if (!isPasswordValid(password)) {
+    console.warn('[API /api/rules PUT] Unauthorized: Invalid or missing password')
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
   }
   
@@ -79,8 +85,10 @@ export async function PUT(request: Request) {
       data: { text: trimmedText, description: trimmedDescription },
       include: { conflictsWith: true },
     })
+    console.log('[API /api/rules PUT] Rule updated successfully:', rule.id)
     return NextResponse.json(rule)
   } catch (error) {
+    console.error('[API /api/rules PUT] Error updating rule:', error)
     return NextResponse.json({ error: 'Failed to update rule' }, { status: 500 })
   }
 }
@@ -89,7 +97,9 @@ export async function PUT(request: Request) {
 export async function DELETE(request: Request) {
   // Check password authorization
   const password = extractPasswordFromRequest(request)
+  console.log('[API /api/rules DELETE] Password provided:', password ? 'yes' : 'no')
   if (!isPasswordValid(password)) {
+    console.warn('[API /api/rules DELETE] Unauthorized: Invalid or missing password')
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
   }
   
@@ -104,8 +114,10 @@ export async function DELETE(request: Request) {
     await prisma.rule.delete({
       where: { id },
     })
+    console.log('[API /api/rules DELETE] Rule deleted successfully:', id)
     return NextResponse.json({ success: true })
   } catch (error) {
+    console.error('[API /api/rules DELETE] Error deleting rule:', error)
     return NextResponse.json({ error: 'Failed to delete rule' }, { status: 500 })
   }
 }
