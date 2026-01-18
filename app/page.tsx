@@ -14,6 +14,8 @@ export default function Home() {
   const [newRuleText, setNewRuleText] = useState('')
   const [newRuleDescription, setNewRuleDescription] = useState('')
   const [loading, setLoading] = useState(true)
+  const [isAuthorized, setIsAuthorized] = useState(false)
+  const [password, setPassword] = useState<string | null>(null)
   
   // Edit rule
   const [editingRule, setEditingRule] = useState<Rule | null>(null)
@@ -33,8 +35,17 @@ export default function Home() {
   const [randomizedRules, setRandomizedRules] = useState<Rule[]>([])
   const [randomMessage, setRandomMessage] = useState('')
   
-  // Fetch rules on load
+  // Fetch rules on load and check for password
   useEffect(() => {
+    // Check for password in URL
+    const params = new URLSearchParams(window.location.search)
+    const pw = params.get('pw')
+    
+    if (pw) {
+      setPassword(pw)
+      setIsAuthorized(true)
+    }
+    
     fetchRules()
   }, [])
   
@@ -53,7 +64,8 @@ export default function Home() {
   const addRule = async () => {
     if (!newRuleText.trim()) return
     try {
-      const res = await fetch('/api/rules', {
+      const url = password ? `/api/rules?pw=${encodeURIComponent(password)}` : '/api/rules'
+      const res = await fetch(url, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ text: newRuleText, description: newRuleDescription || null }),
@@ -62,6 +74,8 @@ export default function Home() {
         setNewRuleText('')
         setNewRuleDescription('')
         fetchRules()
+      } else {
+        alert('Failed to add rule. Unauthorized or server error.')
       }
     } catch (error) {
       console.error('Failed to add rule')
@@ -71,7 +85,8 @@ export default function Home() {
   const updateRule = async () => {
     if (!editingRule || !editText.trim()) return
     try {
-      const res = await fetch('/api/rules', {
+      const url = password ? `/api/rules?pw=${encodeURIComponent(password)}` : '/api/rules'
+      const res = await fetch(url, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ id: editingRule.id, text: editText, description: editDescription || null }),
@@ -81,6 +96,8 @@ export default function Home() {
         setEditText('')
         setEditDescription('')
         fetchRules()
+      } else {
+        alert('Failed to update rule. Unauthorized or server error.')
       }
     } catch (error) {
       console.error('Failed to update rule')
@@ -101,7 +118,8 @@ export default function Home() {
 
   const deleteRule = async (id: number) => {
     try {
-      await fetch('/api/rules', {
+      const url = password ? `/api/rules?pw=${encodeURIComponent(password)}` : '/api/rules'
+      await fetch(url, {
         method: 'DELETE',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ id }),
@@ -115,7 +133,8 @@ export default function Home() {
   const addConflict = async (ruleId: number, conflictWithId: number) => {
     if (ruleId === conflictWithId) return
     try {
-      await fetch('/api/conflicts', {
+      const url = password ? `/api/conflicts?pw=${encodeURIComponent(password)}` : '/api/conflicts'
+      await fetch(url, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ ruleId, conflictWithId }),
@@ -132,7 +151,8 @@ export default function Home() {
   
   const removeConflict = async (ruleId: number, conflictId: number) => {
     try {
-      await fetch('/api/conflicts', {
+      const url = password ? `/api/conflicts?pw=${encodeURIComponent(password)}` : '/api/conflicts'
+      await fetch(url, {
         method: 'DELETE',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ ruleId, conflictWithId: conflictId }),
@@ -188,32 +208,40 @@ export default function Home() {
     <main className="min-h-screen p-8 max-w-4xl mx-auto">
       <h1 className="text-3xl font-bold mb-8 text-center">Pokemon Rules Manager</h1>
       
-      {/* Add New Rule */}
-      <section className="mb-8 p-4 border border-gray-700 rounded">
-        <h2 className="text-xl font-semibold mb-4">Add New Rule</h2>
-        <div className="space-y-2">
-          <input
-            type="text"
-            value={newRuleText}
-            onChange={(e) => setNewRuleText(e.target.value)}
-            placeholder="Rule name (short)..."
-            className="w-full px-3 py-2 bg-gray-900 border border-gray-700 rounded text-white"
-          />
-          <textarea
-            value={newRuleDescription}
-            onChange={(e) => setNewRuleDescription(e.target.value)}
-            placeholder="Description (optional, more details)..."
-            rows={2}
-            className="w-full px-3 py-2 bg-gray-900 border border-gray-700 rounded text-white resize-none"
-          />
-          <button
-            onClick={addRule}
-            className="px-4 py-2 bg-blue-600 hover:bg-blue-700 rounded font-medium"
-          >
-            Add Rule
-          </button>
+      {!isAuthorized && (
+        <div className="mb-4 p-3 bg-yellow-900 border border-yellow-700 rounded text-yellow-200 text-center">
+          Read-only mode. Add ?pw=yourpassword to the URL to enable editing.
         </div>
-      </section>
+      )}
+      
+      {/* Add New Rule */}
+      {isAuthorized && (
+        <section className="mb-8 p-4 border border-gray-700 rounded">
+          <h2 className="text-xl font-semibold mb-4">Add New Rule</h2>
+          <div className="space-y-2">
+            <input
+              type="text"
+              value={newRuleText}
+              onChange={(e) => setNewRuleText(e.target.value)}
+              placeholder="Rule name (short)..."
+              className="w-full px-3 py-2 bg-gray-900 border border-gray-700 rounded text-white"
+            />
+            <textarea
+              value={newRuleDescription}
+              onChange={(e) => setNewRuleDescription(e.target.value)}
+              placeholder="Description (optional, more details)..."
+              rows={2}
+              className="w-full px-3 py-2 bg-gray-900 border border-gray-700 rounded text-white resize-none"
+            />
+            <button
+              onClick={addRule}
+              className="px-4 py-2 bg-blue-600 hover:bg-blue-700 rounded font-medium"
+            >
+              Add Rule
+            </button>
+          </div>
+        </section>
+      )}
       
       {/* Rules List */}
       <section className="mb-8 p-4 border border-gray-700 rounded">
@@ -251,39 +279,43 @@ export default function Home() {
                         {rule.conflictsWith.map((conflict, idx) => (
                           <span key={conflict.id} className="text-red-300">
                             #{conflict.id}
-                            <button
-                              onClick={() => removeConflict(rule.id, conflict.id)}
-                              className="ml-1 text-red-500 hover:text-red-300"
-                              title="Remove conflict"
-                            >
-                              ×
-                            </button>
+                            {isAuthorized && (
+                              <button
+                                onClick={() => removeConflict(rule.id, conflict.id)}
+                                className="ml-1 text-red-500 hover:text-red-300"
+                                title="Remove conflict"
+                              >
+                                ×
+                              </button>
+                            )}
                             {idx < rule.conflictsWith.length - 1 && ', '}
                           </span>
                         ))}
                       </div>
                     )}
                   </div>
-                  <div className="flex gap-2">
-                    <button
-                      onClick={() => startEditing(rule)}
-                      className="px-2 py-1 bg-gray-600 hover:bg-gray-500 rounded text-sm"
-                    >
-                      Edit
-                    </button>
-                    <button
-                      onClick={() => setConflictPopupRule(rule)}
-                      className="px-2 py-1 bg-orange-600 hover:bg-orange-700 rounded text-sm"
-                    >
-                      Conflicts
-                    </button>
-                    <button
-                      onClick={() => deleteRule(rule.id)}
-                      className="px-2 py-1 bg-red-600 hover:bg-red-700 rounded text-sm"
-                    >
-                      Delete
-                    </button>
-                  </div>
+                  {isAuthorized && (
+                    <div className="flex gap-2">
+                      <button
+                        onClick={() => startEditing(rule)}
+                        className="px-2 py-1 bg-gray-600 hover:bg-gray-500 rounded text-sm"
+                      >
+                        Edit
+                      </button>
+                      <button
+                        onClick={() => setConflictPopupRule(rule)}
+                        className="px-2 py-1 bg-orange-600 hover:bg-orange-700 rounded text-sm"
+                      >
+                        Conflicts
+                      </button>
+                      <button
+                        onClick={() => deleteRule(rule.id)}
+                        className="px-2 py-1 bg-red-600 hover:bg-red-700 rounded text-sm"
+                      >
+                        Delete
+                      </button>
+                    </div>
+                  )}
                 </div>
               </li>
             ))}
