@@ -45,7 +45,8 @@ export function isPasswordValid(password: string | null): boolean {
 export function extractPasswordFromRequest(request: Request): string | null {
   const url = new URL(request.url)
   const pw = url.searchParams.get('pw')
-  console.log('[Auth] Extracting password from request URL:', request.url)
+  // Don't log the full URL as it contains the password in query params
+  console.log('[Auth] Extracting password from request path:', url.pathname)
   console.log('[Auth] Password extracted:', pw ? 'yes (length: ' + pw.length + ')' : 'no')
   return pw
 }

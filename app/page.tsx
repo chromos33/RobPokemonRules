@@ -46,7 +46,8 @@ export default function Home() {
       setPassword(pw)
       setIsAuthorized(true)
       console.log('Password detected and set from URL parameter')
-    } else if (pw === '' || params.has('pw')) {
+    } else if (pw === '') {
+      // Empty password parameter detected
       console.warn('Empty password parameter detected in URL. Password is required for editing.')
     } else {
       console.log('No password parameter in URL. App is in read-only mode.')
@@ -84,8 +85,16 @@ export default function Home() {
       } else if (res.status === 401) {
         alert('Failed to add rule: Unauthorized. Please check that you have the correct password in the URL (?pw=yourpassword)')
       } else {
-        const errorData = await res.json().catch(() => ({}))
-        alert(`Failed to add rule: ${errorData.error || 'Server error'} (Status: ${res.status})`)
+        const errorText = await res.text()
+        let errorMessage = 'Server error'
+        try {
+          const errorData = JSON.parse(errorText)
+          errorMessage = errorData.error || errorMessage
+        } catch {
+          // If response is not JSON, use the text or default message
+          errorMessage = errorText || errorMessage
+        }
+        alert(`Failed to add rule: ${errorMessage} (Status: ${res.status})`)
       }
     } catch (error) {
       console.error('Failed to add rule:', error)
@@ -111,8 +120,16 @@ export default function Home() {
       } else if (res.status === 401) {
         alert('Failed to update rule: Unauthorized. Please check that you have the correct password in the URL (?pw=yourpassword)')
       } else {
-        const errorData = await res.json().catch(() => ({}))
-        alert(`Failed to update rule: ${errorData.error || 'Server error'} (Status: ${res.status})`)
+        const errorText = await res.text()
+        let errorMessage = 'Server error'
+        try {
+          const errorData = JSON.parse(errorText)
+          errorMessage = errorData.error || errorMessage
+        } catch {
+          // If response is not JSON, use the text or default message
+          errorMessage = errorText || errorMessage
+        }
+        alert(`Failed to update rule: ${errorMessage} (Status: ${res.status})`)
       }
     } catch (error) {
       console.error('Failed to update rule:', error)
@@ -146,8 +163,16 @@ export default function Home() {
       } else if (res.status === 401) {
         alert('Failed to delete rule: Unauthorized. Please check that you have the correct password in the URL (?pw=yourpassword)')
       } else {
-        const errorData = await res.json().catch(() => ({}))
-        alert(`Failed to delete rule: ${errorData.error || 'Server error'} (Status: ${res.status})`)
+        const errorText = await res.text()
+        let errorMessage = 'Server error'
+        try {
+          const errorData = JSON.parse(errorText)
+          errorMessage = errorData.error || errorMessage
+        } catch {
+          // If response is not JSON, use the text or default message
+          errorMessage = errorText || errorMessage
+        }
+        alert(`Failed to delete rule: ${errorMessage} (Status: ${res.status})`)
       }
     } catch (error) {
       console.error('Failed to delete rule:', error)
@@ -174,8 +199,16 @@ export default function Home() {
       } else if (res.status === 401) {
         alert('Failed to add conflict: Unauthorized. Please check that you have the correct password in the URL (?pw=yourpassword)')
       } else {
-        const errorData = await res.json().catch(() => ({}))
-        alert(`Failed to add conflict: ${errorData.error || 'Server error'} (Status: ${res.status})`)
+        const errorText = await res.text()
+        let errorMessage = 'Server error'
+        try {
+          const errorData = JSON.parse(errorText)
+          errorMessage = errorData.error || errorMessage
+        } catch {
+          // If response is not JSON, use the text or default message
+          errorMessage = errorText || errorMessage
+        }
+        alert(`Failed to add conflict: ${errorMessage} (Status: ${res.status})`)
       }
     } catch (error) {
       console.error('Failed to add conflict:', error)
@@ -203,8 +236,16 @@ export default function Home() {
       } else if (res.status === 401) {
         alert('Failed to remove conflict: Unauthorized. Please check that you have the correct password in the URL (?pw=yourpassword)')
       } else {
-        const errorData = await res.json().catch(() => ({}))
-        alert(`Failed to remove conflict: ${errorData.error || 'Server error'} (Status: ${res.status})`)
+        const errorText = await res.text()
+        let errorMessage = 'Server error'
+        try {
+          const errorData = JSON.parse(errorText)
+          errorMessage = errorData.error || errorMessage
+        } catch {
+          // If response is not JSON, use the text or default message
+          errorMessage = errorText || errorMessage
+        }
+        alert(`Failed to remove conflict: ${errorMessage} (Status: ${res.status})`)
       }
     } catch (error) {
       console.error('Failed to remove conflict:', error)
