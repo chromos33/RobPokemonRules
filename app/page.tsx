@@ -35,6 +35,20 @@ export default function Home() {
   const [randomizedRules, setRandomizedRules] = useState<Rule[]>([])
   const [randomMessage, setRandomMessage] = useState('')
   
+  // Helper function to parse error response
+  const parseErrorResponse = async (res: Response): Promise<string> => {
+    const errorText = await res.text()
+    let errorMessage = 'Server error'
+    try {
+      const errorData = JSON.parse(errorText)
+      errorMessage = errorData.error || errorMessage
+    } catch {
+      // If response is not JSON, use the text or default message
+      errorMessage = errorText || errorMessage
+    }
+    return errorMessage
+  }
+  
   // Fetch rules on load and check for password
   useEffect(() => {
     // Check for password in URL
@@ -85,15 +99,7 @@ export default function Home() {
       } else if (res.status === 401) {
         alert('Failed to add rule: Unauthorized. Please check that you have the correct password in the URL (?pw=yourpassword)')
       } else {
-        const errorText = await res.text()
-        let errorMessage = 'Server error'
-        try {
-          const errorData = JSON.parse(errorText)
-          errorMessage = errorData.error || errorMessage
-        } catch {
-          // If response is not JSON, use the text or default message
-          errorMessage = errorText || errorMessage
-        }
+        const errorMessage = await parseErrorResponse(res)
         alert(`Failed to add rule: ${errorMessage} (Status: ${res.status})`)
       }
     } catch (error) {
@@ -120,15 +126,7 @@ export default function Home() {
       } else if (res.status === 401) {
         alert('Failed to update rule: Unauthorized. Please check that you have the correct password in the URL (?pw=yourpassword)')
       } else {
-        const errorText = await res.text()
-        let errorMessage = 'Server error'
-        try {
-          const errorData = JSON.parse(errorText)
-          errorMessage = errorData.error || errorMessage
-        } catch {
-          // If response is not JSON, use the text or default message
-          errorMessage = errorText || errorMessage
-        }
+        const errorMessage = await parseErrorResponse(res)
         alert(`Failed to update rule: ${errorMessage} (Status: ${res.status})`)
       }
     } catch (error) {
@@ -163,15 +161,7 @@ export default function Home() {
       } else if (res.status === 401) {
         alert('Failed to delete rule: Unauthorized. Please check that you have the correct password in the URL (?pw=yourpassword)')
       } else {
-        const errorText = await res.text()
-        let errorMessage = 'Server error'
-        try {
-          const errorData = JSON.parse(errorText)
-          errorMessage = errorData.error || errorMessage
-        } catch {
-          // If response is not JSON, use the text or default message
-          errorMessage = errorText || errorMessage
-        }
+        const errorMessage = await parseErrorResponse(res)
         alert(`Failed to delete rule: ${errorMessage} (Status: ${res.status})`)
       }
     } catch (error) {
@@ -199,15 +189,7 @@ export default function Home() {
       } else if (res.status === 401) {
         alert('Failed to add conflict: Unauthorized. Please check that you have the correct password in the URL (?pw=yourpassword)')
       } else {
-        const errorText = await res.text()
-        let errorMessage = 'Server error'
-        try {
-          const errorData = JSON.parse(errorText)
-          errorMessage = errorData.error || errorMessage
-        } catch {
-          // If response is not JSON, use the text or default message
-          errorMessage = errorText || errorMessage
-        }
+        const errorMessage = await parseErrorResponse(res)
         alert(`Failed to add conflict: ${errorMessage} (Status: ${res.status})`)
       }
     } catch (error) {
@@ -236,15 +218,7 @@ export default function Home() {
       } else if (res.status === 401) {
         alert('Failed to remove conflict: Unauthorized. Please check that you have the correct password in the URL (?pw=yourpassword)')
       } else {
-        const errorText = await res.text()
-        let errorMessage = 'Server error'
-        try {
-          const errorData = JSON.parse(errorText)
-          errorMessage = errorData.error || errorMessage
-        } catch {
-          // If response is not JSON, use the text or default message
-          errorMessage = errorText || errorMessage
-        }
+        const errorMessage = await parseErrorResponse(res)
         alert(`Failed to remove conflict: ${errorMessage} (Status: ${res.status})`)
       }
     } catch (error) {

@@ -47,6 +47,6 @@ export function extractPasswordFromRequest(request: Request): string | null {
   const pw = url.searchParams.get('pw')
   // Don't log the full URL as it contains the password in query params
   console.log('[Auth] Extracting password from request path:', url.pathname)
-  console.log('[Auth] Password extracted:', pw ? 'yes (length: ' + pw.length + ')' : 'no')
+  console.log('[Auth] Password extracted:', pw ? 'yes' : 'no')
   return pw
 }
