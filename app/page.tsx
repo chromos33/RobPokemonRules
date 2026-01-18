@@ -375,7 +375,7 @@ export default function Home() {
       </section>
 
       {/* Conflict Popup Modal */}
-      {conflictPopupRule && (
+      {conflictPopupRule && isAuthorized && (
         <div 
           className="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center z-50"
           onClick={() => { setConflictPopupRule(null); setConflictFilter(''); }}
@@ -472,7 +472,7 @@ export default function Home() {
       )}
 
       {/* Edit Rule Modal */}
-      {editingRule && (
+      {editingRule && isAuthorized && (
         <div 
           className="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center z-50"
           onClick={cancelEditing}

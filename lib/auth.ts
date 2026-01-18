@@ -9,8 +9,28 @@ export function isPasswordValid(password: string | null): boolean {
     return true
   }
   
-  // Check if provided password matches
-  return password === configuredPassword
+  // If no password provided, deny access
+  if (!password) {
+    return false
+  }
+  
+  // Use constant-time comparison to prevent timing attacks
+  // Both strings are converted to buffers for comparison
+  try {
+    const crypto = require('crypto')
+    const passwordBuffer = Buffer.from(password, 'utf8')
+    const configuredBuffer = Buffer.from(configuredPassword, 'utf8')
+    
+    // Ensure buffers are same length before comparison
+    if (passwordBuffer.length !== configuredBuffer.length) {
+      return false
+    }
+    
+    return crypto.timingSafeEqual(passwordBuffer, configuredBuffer)
+  } catch (error) {
+    // Fallback to simple comparison if crypto fails (shouldn't happen)
+    return password === configuredPassword
+  }
 }
 
 /**
