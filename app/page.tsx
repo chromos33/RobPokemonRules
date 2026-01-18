@@ -36,6 +36,7 @@ export default function Home() {
   const [randomMessage, setRandomMessage] = useState('')
   
   // Helper function to parse error response
+  // Note: This consumes the response body, so should only be called once per response
   const parseErrorResponse = async (res: Response): Promise<string> => {
     const errorText = await res.text()
     let errorMessage = 'Server error'
@@ -56,7 +57,8 @@ export default function Home() {
     const pw = params.get('pw')
     
     // Only set password if it's a non-empty string
-    if (pw && pw.trim().length > 0) {
+    // pw can be null (not present) or string (including empty string)
+    if (pw !== null && pw.trim().length > 0) {
       setPassword(pw)
       setIsAuthorized(true)
       console.log('Password detected and set from URL parameter')
